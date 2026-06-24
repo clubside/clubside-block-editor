@@ -1,0 +1,31 @@
+.csbe-editor:focus-visible,
+.csbe-editor *:focus-visible {
+	outline: none;
+}
+
+.csbe-block {
+	min-height: 1lh;
+}
+
+.csbe-paragraph:empty::before {
+	content: "New paragraph";
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.csbe-paragraph:empty:focus::before {
+	content: "";
+}
+
+.csbe-image {
+	display: block;
+	max-width: 100%;
+	cursor: default;
+	outline: 2px solid transparent;
+	position: relative;
+}
+
+.csbe-image:focus {
+	filter: sepia(100%) hue-rotate(215deg) saturate(200%);
+	outline: 2px solid blue;
+}

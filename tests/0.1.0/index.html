@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Clubside Block Editor 0.1.0 Test</title>
+	<link rel="stylesheet" href="/src/css/csbe.css" type="text/css">
+	<style>
+		* {
+			box-sizing: border-box;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+		}
+		body {
+			font-size: 1rem;
+			font-weight: 400;
+			line-height: 1.4;
+		}
+		#test-content img {
+			width: 800px;
+			max-width: 100%;
+		}
+		#csbe {
+			width: 100%;
+			border: 1px solid;
+			padding: 0.5rem;
+		}
+		.button-bar {
+			padding-top: 1rem;
+			display: flex;
+			gap: 0.5rem;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Clubside Block Editor 0.1.0 Test</h1>
+	<h2>Block Editor</h2>
+	<div id="csbe"></div>
+	<div class="button-bar">
+		<button id="save" type="button">Save</button>
+		<button id="load" type="button">Load</button>
+		<button id="render-file" type="button">Render File</button>
+		<button id="render-editor" type="button">Render Editor</button>
+	</div>
+	<h2>Render</h2>
+	<div id="test-render"></div>
+	<div id="test-content">
+		<h2>Test Paste HTML</h2>
+		<p>The answer was within her reach. It was hidden in a box and now that box sat directly in front of her. She'd spent years searching for it and could hardly believe she'd finally managed to find it. She turned the key to unlock the box and then gently lifted the top. She held her breath in anticipation of finally knowing the answer she had spent so much of her time in search of. As the lid came off she could see that the box was empty.</p>
+		<p>He scolded himself for being so tentative. He knew he shouldn't be so cautious, but there was a sixth sense telling him that things weren't exactly as they appeared. It was that weird chill that rolls up your neck and makes the hair stand on end. He knew that being so tentative could end up costing him the job, but he learned that listening to his sixth sense usually kept him from getting into a lot of trouble.</p>
+		<img src="/tests/assets/landscape04.jpg">
+		<p>This is important to remember. Love isn't like pie. You don't need to divide it among all your friends and loved ones. No matter how much love you give, you can always give more. It doesn't run out, so don't try to hold back giving it as if it may one day run out. Give it freely and as much as you want.</p>
+		<p>Wandering down the path to the pond had become a daily routine. Even when the weather wasn't cooperating like today with the wind and rain, Jerry still took the morning stroll down the path until he reached the pond. Although there didn't seem to be a particular reason Jerry did this to anyone looking in from the outside, those who knew him well knew exactly what was going on. It could all be traced back to a specific incident that happened exactly 5 years previously.</p>
+		<p>Twenty-five hours had passed since the incident. It seemed to be a lot longer than that. That twenty-five hours seemed more like a week in her mind. The fact that she still was having trouble comprehending exactly what took place wasn't helping the matter. She thought if she could just get a little rest the entire incident might make a little more sense.</p>
+		<p>It was their first date and she had been looking forward to it the entire week. She had her eyes on him for months, and it had taken a convoluted scheme with several friends to make it happen, but he'd finally taken the hint and asked her out. After all the time and effort she'd invested into it, she never thought that it would be anything but wonderful. It goes without saying that things didn't work out quite as she expected.</p>
+		<p>The blinking light caught her attention. She thought about it a bit and couldn't remember ever noticing it before. That was strange since it was obvious the flashing light had been there for years. Now she wondered how she missed it for that amount of time and what other things in her small town she had failed to notice.</p>
+	</div>
+	<script type="module">
+		import CSBE from '/src/index.js'
+
+		const saveButton = document.getElementById('save')
+		const loadButton = document.getElementById('load')
+		const renderFileButton = document.getElementById('render-file')
+		const renderEditorButton = document.getElementById('render-editor')
+
+		let csbe, doc
+
+		async function loadDocument() {
+			const result = await fetch('./sample.json').then(r => r.json())
+			csbe.load(result, true)
+		}
+
+		async function renderFromFile() {
+			const result = await fetch('./sample.json').then(r => r.json())
+			csbe.renderDocument(document.getElementById('test-render'), result)
+		}
+
+		saveButton.addEventListener('click', () => {
+			doc = csbe.save()
+			console.log(JSON.stringify(doc, null, '\t'))
+		})
+
+		loadButton.addEventListener('click', loadDocument)
+
+		renderFileButton.addEventListener('click', renderFromFile)
+
+		renderEditorButton.addEventListener('click', () => { csbe.renderEditor(document.getElementById('test-render')) })
+
+		document.addEventListener('DOMContentLoaded', async () => {
+			csbe = await CSBE(document.getElementById('csbe'), { mode: 'simple', debug: true })
+			window.csbe = csbe
+		})
+	</script>
+</body>
+
+</html>

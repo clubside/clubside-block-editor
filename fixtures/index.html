@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>CSBE Test Fixture</title>
+	<link rel="stylesheet" href="/src/css/csbe.css" type="text/css">
+	<style>
+		* {
+			box-sizing: border-box;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+		}
+		body {
+			font-size: 1rem;
+			font-weight: 400;
+			line-height: 1.4;
+		}
+		#test-content img {
+			width: 800px;
+			max-width: 100%;
+		}
+		#csbe {
+			width: 100%;
+			border: 1px solid;
+			padding: 0.5rem;
+		}
+	</style>
+</head>
+
+<body>
+	<h1>Clubside Block Editor Test Fixture</h1>
+	<h2>Block Editor</h2>
+	<div id="csbe"></div>
+	<h2>Render</h2>
+	<div id="test-render"></div>
+	<script type="module">
+		import CSBE from '/src/index.js'
+
+		document.addEventListener('DOMContentLoaded', async () => {
+			csbe = await CSBE(document.getElementById('csbe'), { mode: 'simple', debug: true })
+		})
+	</script>
+</body>
+
+</html>

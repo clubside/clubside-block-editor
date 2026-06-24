@@ -1,0 +1,59 @@
+{
+	"type": "application/csbe",
+	"version": "0.1.0",
+	"schema": "csbe-blocks-0.1",
+	"blocks": [
+		{
+			"type": "paragraph",
+			"version": "0.1.0",
+			"meta": {
+				"author": "Chris Rowley",
+				"description": "Simple paragraph"
+			},
+			"content": "The answer was within her reach. It was hidden in a box and now that box sat directly in front of her. She'd spent years searching for it and could hardly believe she'd finally managed to find it. She turned the key to unlock the box and then gently lifted the top. She held her breath in anticipation of finally knowing the answer she had spent so much of her time in search of. As the lid came off she could see that the box was empty.",
+			"settings": {
+				"align": "inherit",
+				"uuid": "845a005d-1a00-4e08-85ed-561b64bdf963"
+			}
+		},
+		{
+			"type": "paragraph",
+			"version": "0.1.0",
+			"meta": {
+				"author": "Chris Rowley",
+				"description": "Simple paragraph"
+			},
+			"content": "He scolded himself for being so tentative. He knew he shouldn't be so cautious, but there was a sixth sense telling him that things weren't exactly as they appeared. It was that weird chill that rolls up your neck and makes the hair stand on end. He knew that being so tentative could end up costing him the job, but he learned that listening to his sixth sense usually kept him from getting into a lot of trouble.",
+			"settings": {
+				"align": "inherit",
+				"uuid": "4a827631-371e-4116-907a-580bc82ff01a"
+			}
+		},
+		{
+			"type": "image",
+			"version": "0.1.0",
+			"meta": {
+				"author": "Chris Rowley",
+				"description": "Single image"
+			},
+			"content": "http://127.0.0.1:5500/tests/assets/landscape04.jpg",
+			"settings": {
+				"align": "block",
+				"uuid": "e2f47bbc-1e92-46f5-a32d-83bac846a90e"
+			}
+		},
+		{
+			"type": "paragraph",
+			"version": "0.1.0",
+			"meta": {
+				"author": "Chris Rowley",
+				"description": "Simple paragraph"
+			},
+			"content": "This is important to remember. Love isn't like pie. You don't need to divide it among all your friends and loved ones. No matter how much love you give, you can always give more. It doesn't run out, so don't try to hold back giving it as if it may one day run out. Give it freely and as much as you want.",
+			"settings": {
+				"align": "inherit",
+				"uuid": "4c4f812b-a541-438e-9566-439076fb7f4e"
+			}
+		}
+	]
+}
