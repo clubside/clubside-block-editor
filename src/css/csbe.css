@@ -29,3 +29,12 @@
 	filter: sepia(100%) hue-rotate(215deg) saturate(200%);
 	outline: 2px solid blue;
 }
+
+.csbe-editor code {
+	white-space: break-spaces;
+	background-color: #818b981f;
+	border-radius: 6px;
+	margin: 0;
+	padding: .2em .4em;
+	font-size: 85%;
+}

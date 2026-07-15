@@ -195,80 +195,102 @@ function bindEvents() {
 	})
 
 	state.editor.addEventListener('keydown', async (e) => {
-		const active = document.activeElement
+		const sel = window.getSelection()
+		if (!sel.rangeCount) return
 
+		const range = sel.getRangeAt(0)
+
+		const block = getBlockAncestor(range.startContainer)
+
+		// console.log(e.ctrlKey, e.shiftKey, e.key, active, active.classList.contains('csbe-image'))
 		// Only handle deletion when an image block is focused
-		if (!active || !active.classList.contains('csbe-image')) return
+		if (!block) return
 
-		switch (e.key) {
-			case 'Backspace':
-			case 'Delete': {
-				e.preventDefault()
-
-				let block = active
-				if (!block.classList.contains('csbe-block')) {
-					block = block.parentElement
+		if (e.ctrlKey && !block.classList.contains('csbe-image')) {
+			if (e.shiftKey) {
+				switch (e.key) {
+					case 'S':
+						e.preventDefault()
+						handleInline(block, sel, range, 'strike')
+						break
+					case 'H':
+						e.preventDefault()
+						handleInline(block, sel, range, 'mark')
+						break
 				}
-
-				let focusBlock = null
-				let focusPos = null
-
-				if (e.key === 'Backspace') {
-					// Backspace prefers previous block
-					if (block.previousElementSibling) {
-						focusBlock = block.previousElementSibling
-						focusPos = placeCaretAtEnd
-					} else if (block.nextElementSibling) {
-						focusBlock = block.nextElementSibling
-						focusPos = placeCaretAtStart
-					}
-				} else {
-					// Delete prefers next block
-					if (block.nextElementSibling) {
-						focusBlock = block.nextElementSibling
-						focusPos = placeCaretAtStart
-					} else if (block.previousElementSibling) {
-						focusBlock = block.previousElementSibling
-						focusPos = placeCaretAtEnd
-					}
+			} else {
+				switch (e.key) {
+					case 'e':
+						e.preventDefault()
+						handleInline(block, sel, range, 'code')
+						break
+					case ',':
+						e.preventDefault()
+						handleInline(block, sel, range, 'sub')
+						break
+					case '.':
+						e.preventDefault()
+						handleInline(block, sel, range, 'sup')
+						break
 				}
-
-				block.remove()
-
-				if (focusBlock) {
-					focusPos(focusBlock)
-				} else {
-					// No blocks left — create a new paragraph
-					const newBlock = await activeBlocks.paragraph.create()
-					state.editor.appendChild(newBlock)
-					placeCaretAtEnd(newBlock)
-				}
-				break
 			}
-			case 'ArrowLeft':
-			case 'ArrowUp': {
-				e.preventDefault()
-				const prev = active.previousElementSibling
-				if (prev) {
-					placeCaretAtEnd(prev)
-				}
-				break
-			}
-			case 'ArrowRight':
-			case 'ArrowDown': {
-				e.preventDefault()
-				const next = active.nextElementSibling
+		}
+	})
+
+	state.editor.addEventListener('keyup', (e) => {
+		if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return
+
+		if (document.activeElement.dataset.blocktype === 'image') {
+			const block = document.activeElement
+			if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+				const next = block.nextElementSibling
 				if (next) {
-					placeCaretAtEnd(next)
+					if (next.dataset.blocktype === 'image') {
+						clearSelection()
+						next.focus()
+					} else {
+						placeCaretAtStart(next)
+					}
 				}
-				break
+			} else {
+				const prev = block.previousElementSibling
+				if (prev) {
+					if (prev.dataset.blocktype === 'image') {
+						clearSelection()
+						prev.focus()
+					} else {
+						placeCaretAtEnd(prev)
+					}
+				}
 			}
-			case 'Enter': {
-				e.preventDefault()
-				const newBlock = await activeBlocks.paragraph.create()
-				active.after(newBlock)
-				placeCaretAtStart(newBlock)
-				break
+		} else {
+			const sel = window.getSelection()
+			if (!sel.rangeCount) return
+
+			const range = sel.getRangeAt(0)
+			const container = range.startContainer
+
+			// Only care when collapsed and inside the editor root
+			if (!range.collapsed || container !== state.editor) return
+
+			const offset = range.startOffset
+
+			// Candidate nodes
+			const before = state.editor.childNodes[offset - 1]
+			const after = state.editor.childNodes[offset]
+
+			// console.log({ before, after })
+
+			// Check both sides
+			const target =
+			(before && before.dataset.blocktype === 'image')
+				? before
+				: (after && after.dataset.blocktype === 'image')
+						? after
+						: null
+
+			if (target) {
+				target.focus()
 			}
 		}
 	})
@@ -593,13 +615,26 @@ function clearSelection() {
 	sel.removeAllRanges()
 }
 
+function findInlineAncestor(node, tag) {
+	tag = tag.toLowerCase()
+	while (node) {
+		if (node.nodeType === 1 && node.tagName.toLowerCase() === tag) {
+			return node
+		}
+		node = node.parentNode
+	}
+	return null
+}
+
 /**
  * Get the container block
  * @param {HTMLElement} node - node to check
  * @returns {HTMLElement}
  */
 function getBlockAncestor(node) {
+	// console.log(node, node.nodeType, node.parentNode, node.parentNode.nodeType)
 	if (node.nodeType === Node.TEXT_NODE) node = node.parentNode
+	if (node.classList.contains('csbe-editor')) return null
 	while (node) {
 		if (node.classList.contains('csbe-block')) return node
 		node = node.parentNode
@@ -871,6 +906,41 @@ function handleHTMLPasteSelectionInsideSingleBlock(block, range, body) {
 	}
 }
 
+function handleInline(block, sel, range, tag) {
+	const wrapperTag = tag.toLowerCase()
+
+	if (range.collapsed) {
+		// caret-only: insert empty tag
+		const wrapper = document.createElement(wrapperTag)
+		const zwsp = document.createTextNode('\u200b')
+		wrapper.appendChild(zwsp)
+		range.insertNode(wrapper)
+
+		const newRange = document.createRange()
+		newRange.setStart(zwsp, 1)
+		newRange.collapse(true)
+
+		sel.removeAllRanges()
+		sel.addRange(newRange)
+		return
+	}
+
+	// expanded selection
+	const startInline = findInlineAncestor(range.startContainer, wrapperTag)
+	const endInline = findInlineAncestor(range.endContainer, wrapperTag)
+
+	// selection fully inside same inline tag → UNWRAP
+	if (startInline && startInline === endInline) {
+		unwrapInline(sel, range, startInline)
+		block.normalize()
+		return
+	}
+
+	// otherwise → WRAP
+	wrapInline(sel, range, wrapperTag)
+	block.normalize()
+}
+
 /**
  * Check if the cursor is at the end of the current block
  * @param {HTMLElement} block - current block
@@ -900,6 +970,11 @@ function isCaretAtEnd(block, range) {
  * @param {HTMLElement} endBlock - block at end of selection
  */
 function mergeBlocksAcrossSelection(range, startBlock, endBlock) {
+	// 0. Capture caret position BEFORE deleting content
+	const sel = window.getSelection()
+	const caretOffset = range.startOffset
+	const caretContainer = range.startContainer
+
 	// 1. Delete the selected content
 	range.deleteContents()
 
@@ -911,9 +986,24 @@ function mergeBlocksAcrossSelection(range, startBlock, endBlock) {
 	// 3. Remove the now-empty endBlock
 	endBlock.remove()
 
-	// 4. Place caret at the merge point
+	// 4. Normalize merged content
 	startBlock.normalize()
-	placeCaretAtEnd(startBlock)
+
+	// 5. Restore caret to original position
+	const newRange = document.createRange()
+
+	// If the caret was inside startBlock text
+	if (startBlock.contains(caretContainer)) {
+		// Restore using the original container + offset
+		newRange.setStart(caretContainer, Math.min(caretOffset, caretContainer.length))
+	} else {
+		// Fallback: place at start of startBlock
+		newRange.setStart(startBlock, 0)
+	}
+
+	newRange.collapse(true)
+	sel.removeAllRanges()
+	sel.addRange(newRange)
 }
 
 /**
@@ -1111,4 +1201,34 @@ function trimFragment(fragment) {
 	}
 
 	return fragment
+}
+
+function unwrapInline(sel, range, inlineNode) {
+	// extract selected portion (browser will split inlineNode as needed)
+	const extracted = range.extractContents()
+
+	// replace selection with plain text
+	const plain = document.createTextNode(extracted.textContent)
+	range.insertNode(plain)
+
+	// restore selection to that plain text
+	const newRange = document.createRange()
+	newRange.setStart(plain, 0)
+	newRange.setEnd(plain, plain.length)
+
+	sel.removeAllRanges()
+	sel.addRange(newRange)
+}
+
+function wrapInline(sel, range, tag) {
+	const wrapper = document.createElement(tag)
+	const contents = range.extractContents()
+	wrapper.appendChild(contents)
+	range.insertNode(wrapper)
+
+	const newRange = document.createRange()
+	newRange.selectNodeContents(wrapper)
+
+	sel.removeAllRanges()
+	sel.addRange(newRange)
 }
